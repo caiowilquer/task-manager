@@ -50,8 +50,6 @@ const statuses: TaskStatus[] = [
   'DONE',
 ];
 
-const EMPTY_TASKS: Task[] = [];
-
 export function ProjectBoardPage() {
   const { projectId = '' } = useParams();
 
@@ -71,15 +69,14 @@ export function ProjectBoardPage() {
     open: false,
   });
 
-  const [historyTask, setHistoryTask] = useState<Task | null>(
-      null,
-  );
+  const [historyTask, setHistoryTask] =
+      useState<Task | null>(null);
 
-  const [membersOpen, setMembersOpen] = useState(false);
+  const [membersOpen, setMembersOpen] =
+      useState(false);
 
-  const [memberEmail, setMemberEmail] = useState(
-      'member@taskmanager.local',
-  );
+  const [memberEmail, setMemberEmail] =
+      useState('member@taskmanager.local');
 
   const sensors = useSensors(
       useSensor(PointerSensor, {
@@ -91,19 +88,22 @@ export function ProjectBoardPage() {
 
   const project = useQuery({
     queryKey: ['project', projectId],
-    queryFn: () => projectService.get(projectId),
+    queryFn: () =>
+        projectService.get(projectId),
     enabled: Boolean(projectId),
   });
 
   const tasks = useQuery({
     queryKey: ['tasks', projectId, filters],
-    queryFn: () => taskService.list(projectId, filters),
+    queryFn: () =>
+        taskService.list(projectId, filters),
     enabled: Boolean(projectId),
   });
 
   const summary = useQuery({
     queryKey: ['summary', projectId],
-    queryFn: () => taskService.summary(projectId),
+    queryFn: () =>
+        taskService.summary(projectId),
     enabled: Boolean(projectId),
   });
 
@@ -122,11 +122,14 @@ export function ProjectBoardPage() {
   });
 
   /*
-   * EMPTY_TASKS possui referência estável e evita o aviso
-   * react-hooks/exhaustive-deps do ESLint.
+   * Mantém a mesma referência enquanto o conteúdo retornado
+   * pela consulta não mudar. Isso evita o aviso do
+   * react-hooks/exhaustive-deps.
    */
-  const taskList =
-      tasks.data?.content ?? EMPTY_TASKS;
+  const taskList = useMemo(
+      () => tasks.data?.content ?? [],
+      [tasks.data?.content],
+  );
 
   useAssignmentNotifications(taskList);
 
@@ -144,12 +147,12 @@ export function ProjectBoardPage() {
     mutationFn: (payload: TaskPayload) =>
         taskService.create(projectId, payload),
 
-    onSuccess: (task) => {
+    onSuccess: (createdTask) => {
       invalidateTaskData();
       setTaskModal({ open: false });
 
       toast.success(
-          task.assignee.id === user?.id
+          createdTask.assignee.id === user?.id
               ? 'Tarefa criada e atribuída a você.'
               : 'Tarefa criada.',
       );
@@ -271,7 +274,8 @@ export function ProjectBoardPage() {
               statuses.map((status) => [
                 status,
                 taskList.filter(
-                    (task) => task.status === status,
+                    (task) =>
+                        task.status === status,
                 ),
               ]),
           ) as Record<TaskStatus, Task[]>,
@@ -362,7 +366,9 @@ export function ProjectBoardPage() {
               <button
                   className="button secondary"
                   type="button"
-                  onClick={() => setMembersOpen(true)}
+                  onClick={() =>
+                      setMembersOpen(true)
+                  }
               >
                 <Users size={18} />
                 Membros
@@ -372,7 +378,9 @@ export function ProjectBoardPage() {
                   className="button primary"
                   type="button"
                   onClick={() =>
-                      setTaskModal({ open: true })
+                      setTaskModal({
+                        open: true,
+                      })
                   }
                   data-testid="new-task"
               >
@@ -382,7 +390,9 @@ export function ProjectBoardPage() {
             </div>
           </div>
 
-          <SummaryPanel summary={summary.data} />
+          <SummaryPanel
+              summary={summary.data}
+          />
 
           <TaskFiltersBar
               filters={filters}
@@ -413,12 +423,14 @@ export function ProjectBoardPage() {
                           })
                       }
                       onDelete={(task) => {
-                        if (
-                            confirm(
-                                `Excluir “${task.title}”?`,
-                            )
-                        ) {
-                          deleteTask.mutate(task.id);
+                        const confirmed = window.confirm(
+                            `Excluir “${task.title}”?`,
+                        );
+
+                        if (confirmed) {
+                          deleteTask.mutate(
+                              task.id,
+                          );
                         }
                       }}
                       onHistory={setHistoryTask}
@@ -438,7 +450,8 @@ export function ProjectBoardPage() {
                               ...filters,
                               page: Math.max(
                                   0,
-                                  (filters.page ?? 0) - 1,
+                                  (filters.page ?? 0) -
+                                  1,
                               ),
                             })
                         }
@@ -448,8 +461,8 @@ export function ProjectBoardPage() {
 
                     <span>
               Página{' '}
-                      {(tasks.data?.page ?? 0) + 1} de{' '}
-                      {tasks.data?.totalPages}
+                      {(tasks.data?.page ?? 0) + 1}{' '}
+                      de {tasks.data?.totalPages}
             </span>
 
                     <button
@@ -459,7 +472,8 @@ export function ProjectBoardPage() {
                             setFilters({
                               ...filters,
                               page:
-                                  (filters.page ?? 0) + 1,
+                                  (filters.page ?? 0) +
+                                  1,
                             })
                         }
                     >
@@ -476,18 +490,24 @@ export function ProjectBoardPage() {
                         : 'Nova tarefa'
                   }
                   onClose={() =>
-                      setTaskModal({ open: false })
+                      setTaskModal({
+                        open: false,
+                      })
                   }
               >
                 <TaskForm
-                    members={project.data.members}
+                    members={
+                      project.data.members
+                    }
                     task={taskModal.task}
                     submitting={
                         createTask.isPending ||
                         updateTask.isPending
                     }
                     onCancel={() =>
-                        setTaskModal({ open: false })
+                        setTaskModal({
+                          open: false,
+                        })
                     }
                     onSubmit={(payload) => {
                       if (taskModal.task) {
@@ -499,7 +519,9 @@ export function ProjectBoardPage() {
                         return;
                       }
 
-                      createTask.mutate(payload);
+                      createTask.mutate(
+                          payload,
+                      );
                     }}
                 />
               </Modal>
@@ -560,7 +582,9 @@ export function ProjectBoardPage() {
                               {item.changedBy.name} ·{' '}
                               {new Date(
                                   item.changedAt,
-                              ).toLocaleString('pt-BR')}
+                              ).toLocaleString(
+                                  'pt-BR',
+                              )}
                             </small>
                           </div>
                       ),
@@ -641,7 +665,9 @@ export function ProjectBoardPage() {
 
                       <button
                           className="button primary"
-                          disabled={addMember.isPending}
+                          disabled={
+                            addMember.isPending
+                          }
                           data-testid="add-member"
                           type="submit"
                       >
@@ -654,7 +680,8 @@ export function ProjectBoardPage() {
                 {!isOwner && (
                     <p className="muted">
                       <Settings size={15} />
-                      Somente o dono gerencia membros.
+                      Somente o dono gerencia
+                      membros.
                     </p>
                 )}
               </Modal>
