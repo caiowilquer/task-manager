@@ -1,0 +1,22 @@
+spring:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  cache:
+    type: none
+
+app:
+  jwt:
+    secret: dGFzay1tYW5hZ2VyLXRlc3Qtc2VjcmV0LWtleS10aGF0LWlzLWxvbmc=
+    expiration: PT30M
+  cors:
+    allowed-origins: http://localhost:5173
+  bootstrap:
+    enabled: false
+
+logging:
+  level:
+    root: WARN

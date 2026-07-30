@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://postgres:5432/task_manager}
+    username: ${DATABASE_USERNAME:task_manager}
+    password: ${DATABASE_PASSWORD:task_manager}
+
+app:
+  bootstrap:
+    enabled: ${BOOTSTRAP_ENABLED:true}
+
+logging:
+  level:
+    root: INFO
+    com.caiowilquer.taskmanager: INFO
