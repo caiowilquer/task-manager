@@ -35,7 +35,8 @@ export function ProjectBoardPage() {
   const tasks = useQuery({ queryKey: ['tasks', projectId, filters], queryFn: () => taskService.list(projectId, filters), enabled: !!projectId });
   const summary = useQuery({ queryKey: ['summary', projectId], queryFn: () => taskService.summary(projectId), enabled: !!projectId });
   const history = useQuery({ queryKey: ['history', projectId, historyTask?.id], queryFn: () => taskService.history(projectId, historyTask!.id), enabled: !!historyTask });
-  const taskList = tasks.data?.content ?? [];
+  const taskList = useMemo(() => tasks.data?.content ?? [], [tasks.data?.content]
+  );
   useAssignmentNotifications(taskList);
 
   const invalidateTaskData = () => {
